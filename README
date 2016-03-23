@@ -1,0 +1,16 @@
+
+SUDOKU PUZZLE SOLVER
+
+Written by
+----------
+
+Cody Barnson
+CPSC 3750 - Assignment 3 - Programming part 1
+
+
+How to use
+----------
+
+Enter a solvable sudoku puzzle (9x9) in the provided input text file.  Replace
+any unknowns with the integer '0'.  Run the command <make> to compile and 
+executable file <main> to solve and output puzzle to cout.
