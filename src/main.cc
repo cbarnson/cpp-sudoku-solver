@@ -1,7 +1,3 @@
-//******************************************************************************
-// Written by: Cody Barnson
-// CPSC 3750 - Assignment 3 - Programming Part 1 - Sudoku problem
-//******************************************************************************
 #include <iostream>
 #include <fstream>
 
