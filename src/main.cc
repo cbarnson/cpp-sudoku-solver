@@ -1,132 +1,130 @@
-#include <iostream>
-#include <fstream>
+/**
+ * @file main.cc
+ * @author C. Barnson (cbarnson@outlook.com)
+ * @brief Read in an unsolved sudoku (9x9) and produce a solution, if one
+ * exists.
+ * @version 0.1
+ * @date 2019-01-11
+ *
+ * @copyright Copyright (c) 2019
+ *
+ */
+#include <bits/stdc++.h>
+#define FR(i, n) for (int i = 0; i < (n); ++i)
+using namespace std;
 
-using std::ifstream;
-using std::cout;
-using std::cin;
-using std::endl;
+#if __has_include("default_cf.h")
+#include "default_cf.h"
+#define DEBUG 1
+#endif
 
-// check if current board state is valid, no constraints broken
-bool isValid(int b[][9]) {
-   for (int R = 0; R < 9; R++) {
-      for (int C = 0; C < 9; C++) {
+typedef long long ll;
+typedef pair<int, int> ii;
+typedef vector<int> vi;
+typedef vector<vi> vvi;
+typedef vector<ii> vii;
+typedef vector<vii> vvii;
 
-	 // we don't check cells filled with 0, they haven't been filled yet
-	 if (b[R][C] > 0) {
-	    // check this cell vs its row
-	    for (int c = 0; c < 9; c++) 
-	       if (c != C) 
-		  if (b[R][C] == b[R][c])
-		     return false;
-	    
-	    // vs its column
-	    for  (int r = 0; r < 9; r++) 
-	       if (r != R)
-		  if (b[R][C] == b[r][C])
-		     return false;
-	    
-	    // vs its 3x3 box
-	    int startR = R - (R % 3);
-	    int startC = C - (C % 3);
-	    for (int r = startR; r < (startR + 3); r++) 
-	       for (int c = startC; c < (startC + 3); c++) 
-		  if ((r != R) && (c != C))
-		     if (b[R][C] == b[r][c])
-			return false;
-	 }
+/**
+ * @brief Given a grid state, where 0's are unassigned spaces (and allowed),
+ * determine if is valid (i.e. no conflicts currently exist).
+ *
+ * @param g 2D vector of integers, representing digits from 0 to 9, where 0 is
+ * unassigned.
+ * @return true Grid state is valid, no conflicts.
+ * @return false Grid state is invalid, there exists an assigned value that has
+ * been used more than once in some row or column.
+ */
+bool isValid(vvi &g) {
+  vvi r(10, vi(10, 0));
+  vvi c(10, vi(10, 0));
+  for (int i = 0; i < 9; i++) {
+    for (int j = 0; j < 9; j++) {
+      r[i + 1][g[i][j]]++;
+      c[j + 1][g[i][j]]++;
+    }
+  }
+
+  for (int i = 1; i < 10; i++) {
+    for (int j = 1; j < 10; j++) {
+      if (r[i][j] > 1 || c[i][j] > 1) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Solve the sudoku.
+ *
+ * @param g 2D vector, representing the grid state.
+ * @return true Sudoku can be solved, and has been solved.
+ * @return false No solution exists.
+ */
+bool solve(vvi &g) {
+  int a, b;
+  for (a = 0; a < 9; a++) {
+    for (b = 0; b < 9; b++) {
+      if (g[a][b] == 0) {
+        goto out;
       }
-   }
-   return true;
-}
+    }
+  }
+  return true;
 
-// takes an index from 0 to 80 and returns the corresponding row for that index
-int getRow(int index) {
-   return index / 9;
-}
-
-// takes an index from 0 to 80 and returns the corresponding col for that index
-int getCol(int index) {
-   return index % 9;
-}
-
-// takes a 2D array of ints and returns the index of the first '0' going from
-// left to right, top to bottom
-// returns 81 if no '0' is found in indices 0 to 80
-int getNextPosition(int b[9][9]) {
-   int nextPos = 0;
-   for (int r = 0; r < 9; r++) {
-      for (int c = 0; c < 9; c++) {
-	 if (b[r][c] == 0)
-	    return nextPos;	
-	 nextPos++;
-      }
-   }
-   return 81; // no positions left to fill
-}
-
-// where index is 0 for top left value, and 80 for bot right value
-// if index = 81 it is endofboard
-// int row = index / maxRowCount
-// int col = index % maxRowCount
-bool backtrack(int b[9][9]) {
-   int pos = getNextPosition(b);
-   
-   if (pos == 81)
+out:
+  for (int k = 1; k <= 9; k++) {
+    g[a][b] = k;
+    if (isValid(g) && solve(g)) {
       return true;
-   
-   for (int x = 1; x <= 9; x++) {
-      b[getRow(pos)][getCol(pos)] = x;
-      if (isValid(b)) 	 
-	 if (backtrack(b))
-	    return true;
-   }
-   b[getRow(pos)][getCol(pos)] = 0; // reset the value to 0   
-   return false;
+    }
+  }
+  g[a][b] = 0;
+  return false;
 }
 
-
-// formats output so the 9x9 board is display in sections of 3x3
-void print(int b[9][9]) {
-   
-   for (int r = 0; r < 9; r++) {
-      for (int c = 0; c < 9; c++) {
-	 if (c == 3 || c == 6)
-	    cout << "| ";
-	 cout << b[r][c] << " ";
+/**
+ * @brief Formats the output to look more pretty in a terminal.
+ *
+ * @param g_initial Snapshot of the grid state when initially read in.
+ * @param g Grid state containing solution.
+ */
+void prettyPrint(vvi &g_initial, vvi &g) {
+  cout << "Solution :\n";
+  for (int i = 0; i < g.size(); i++) {
+    // initial
+    if (i == 3 || i == 6) {
+      cout << string(3 * (9 + 2), '-');
+      cout << "   =>   ";
+      cout << string(3 * (9 + 2), '-');
+      cout << "\n";
+    }
+    for (int j = 0; j < g_initial[i].size(); j++) {
+      if (j == 3 || j == 6) {
+        cout << setw(3) << "|";
       }
-      if (r == 2 || r == 5)
-	 cout << "\n---------------------";
-      cout << endl;
-   }
-   cout << endl;
-   
+      cout << setw(3) << g_initial[i][j];
+    }
+
+    cout << "   =>  ";
+
+    for (int j = 0; j < g[i].size(); j++) {
+      if (j == 3 || j == 6) {
+        cout << setw(3) << "|";
+      }
+      cout << setw(3) << g[i][j];
+    }
+
+    cout << "\n";
+  }
 }
-
-
 
 int main() {
-
-   int board[9][9];   
-   ifstream fin;
-   fin.open ("input");
-
-   // read in values from input
-   if (fin.is_open()) {
-      for (int r = 0; r < 9; r++) 
-	 for (int c = 0; c < 9; c++) 
-	    fin >> board[r][c];	       
-      fin.close();
-   }
-   else {
-      cout << "could not open input file\n";
-      exit(1); // error with reading input
-   }
-   
-   
-   if (backtrack(board)) 
-      print(board);   
-   else
-      cout << "no solution exists\n";
-   
-   return 0;
+  vvi g(9, vi(9, 0));
+  FR(i, 9) FR(j, 9) cin >> g[i][j];
+  vvi g_initial(g);
+  if (solve(g)) {
+    prettyPrint(g_initial, g);
+  } else {
+    cout << "no solution exists\n";
+  }
 }
