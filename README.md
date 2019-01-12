@@ -4,7 +4,7 @@ Solves sudoku puzzles!
 
 ## Installation
 
-Download the source code and compile with `g++`.  Included `Makefile`.
+Download the source code and compile with `g++`.  Included `Makefile`.  Here I'm using C++17, but you could just as well compile with C++11 (just swap `-std=c++17` for `-std=c++11`).
 
 ## Usage
 
